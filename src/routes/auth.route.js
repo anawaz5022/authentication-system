@@ -9,5 +9,7 @@ router.post("/register", authController.register);
 // GET /api/auth/get-me
 router.get("/get-me", authController.getMe);
 
+//GET /api/auth/refresh-token
+router.get("/refresh-token", authController.refreshToken);
 
 export default router;
