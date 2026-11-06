@@ -12,4 +12,7 @@ router.get("/get-me", authController.getMe);
 //GET /api/auth/refresh-token
 router.get("/refresh-token", authController.refreshToken);
 
+//GET /api/auth/logout
+router.get("/logout", authController.logout);
+
 export default router;
