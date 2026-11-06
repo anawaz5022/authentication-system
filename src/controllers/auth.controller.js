@@ -170,3 +170,85 @@ export async function logout(req,res) {
         message: "User logged out successfully"
     })
 }
+
+export async function logoutAll(req,res) {
+    const refreshToken = req.cookies.refreshToken;
+    if(!refreshToken) {
+        return res.status(401).json({
+             message: "Refresh token not found" 
+            })
+    }
+
+    const decoded = jwt.verify(refreshToken, config.JWT_SECRET)
+
+    await sessionModel.updateMany(
+        {
+            user: decoded.id,
+            revoked: false
+        },
+        {
+            $set: { revoked: true }
+        }
+    )
+
+    res.clearCookie("refreshToken");
+    res.status(200).json({
+        message: "User logged out from all sessions successfully"
+    })
+    
+}
+
+export async function login(req,res){
+
+    const { email, password } = req.body;
+
+    const user = await usermodel.findOne({email})
+
+    if(!user) {
+        return res.status(401).json({
+            message: "Invalid email or password"
+        })
+    }
+
+    const hashedpassword = crypto.createHash("sha256").update(password).digest("hex");
+
+    if(user.password !== hashedpassword) {
+        return res.status(401).json({
+            message: "Invalid email or password"
+        })
+    }
+
+    const refreshToken = jwt.sign({
+        id: user._id,
+    },config.JWT_SECRET, {
+        expiresIn: "7d"
+    })
+
+    const refreshTokenHash = crypto.createHash("sha256").update(refreshToken).digest("hex");
+
+    const session = await sessionModel.create({
+        user: user._id,
+        refreshTokenHash,
+        ip: req.ip,
+        userAgent: req.get("User-Agent")
+    });
+
+    const accessToken = jwt.sign({
+        id: user._id,
+        sessionId: session._id
+    },config.JWT_SECRET, {
+        expiresIn: "15m"
+    })
+
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    })
+
+    res.status(200).json({
+        message: "User logged in successfully",
+        accessToken
+    }) 
+}
