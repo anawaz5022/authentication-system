@@ -73,7 +73,8 @@ export async function register(req,res) {
         usermodel: {
             id: newuser._id,
             username: newuser.username,
-            email: newuser.email
+            email: newuser.email,
+            role: newuser.role
         },
         accessToken,
     })

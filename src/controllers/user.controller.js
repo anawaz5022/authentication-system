@@ -1,7 +1,7 @@
 import userModel from "../models/user.model.js";
 
 export async function getMe(req, res) {
-    const user = await userModel.findById(req.auth.userId).select("username email");
+    const user = await userModel.findById(req.auth.userId).select("username email role");
 
     if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -11,7 +11,8 @@ export async function getMe(req, res) {
         message: "User fetched successfully",
         user: {
             username: user.username,
-            email: user.email
+            email: user.email,
+            role: user.role
         }
     });
 }
@@ -75,7 +76,8 @@ export async function updateMe(req, res) {
         message: "Profile updated successfully",
         user: {
             username: user.username,
-            email: user.email
+            email: user.email,
+            role: user.role
         }
     });
 }
