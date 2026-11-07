@@ -79,22 +79,6 @@ export async function register(req,res) {
     })
 }
 
-export async function getMe(req,res) {
-    const token = req.headers.authorization?.split(" ")[1];
-    if(!token) {
-        return res.status(401).json({ message: "token not found" });
-    }
-    const decoded = jwt.verify(token, config.JWT_SECRET)
-    const user=await usermodel.findById(decoded.id)
-    res.status(200).json({
-        message: "User fetched successfully",
-        user: {
-            username: user.username,
-            email: user.email
-        }
-    })
-}
-
 export async function refreshToken(req,res) {
     const refreshToken = req.cookies.refreshToken;
     if(!refreshToken) {
@@ -119,6 +103,7 @@ export async function refreshToken(req,res) {
 
     const accessToken = jwt.sign({
         id: decoded.id,
+        sessionId: session._id
     },config.JWT_SECRET, {
         expiresIn: "15m"
     })
